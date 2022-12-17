@@ -1,0 +1,78 @@
+use ethers_core::types::{Address, U256};
+use serde::{Deserialize, Serialize};
+use structopt::StructOpt;
+
+#[derive(Debug, StructOpt)]
+#[structopt(name = "KIWI")]
+struct Opt {
+    #[structopt(long)]
+    pub sender: Address,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Token {
+    name: String,
+    symbol: String,
+    total_supply: U256,
+    decimals: u8,
+    balances: Vec<(Address, U256)>,
+}
+
+impl Token {
+    fn new(name: &str, symbol: &str, total_supply: U256, decimals: u8) -> Self {
+        Self {
+            name: name.to_owned(),
+            symbol: symbol.to_owned(),
+            total_supply,
+            decimals,
+            balances: vec![],
+        }
+    }
+
+    fn balance_of(&self, owner: &Address) -> U256 {
+        self.balances
+            .iter()
+            .find(|(a, _)| a == owner)
+            .map(|(_, b)| *b)
+            .unwrap_or_default()
+    }
+
+    fn transfer(&mut self, from: &Address, to: &Address, value: U256) -> bool {
+        let from_balance = self.balance_of(from);
+        if from_balance < value {
+            return false;
+        }
+
+        let to_balance = self.balance_of(to);
+        self.balances = self
+            .balances
+            .iter()
+            .map(|(a, b)| {
+                if a == from {
+                    (*a, b - value)
+                } else if a == to {
+                    (*a, b + value)
+                } else {
+                    (*a, *b)
+                }
+            })
+            .collect();
+        true
+    }
+}
+
+fn main() {
+    let opt = Opt::from_args();
+    let mut token = Token::new("Ginger Cat", "KIWI", 100_000_000.into(), 18);
+
+    let sender = opt.sender;
+    let recipient = Address::random();
+
+    let transfer_amount = 10_000.into();
+    let success = token.transfer(&sender, &recipient, transfer_amount);
+    if success {
+        println!("Successfully transferred {} KIWI from {} to {}", transfer_amount, sender, recipient);
+    } else {
+        println!("Transfer failed");
+    }
+}
