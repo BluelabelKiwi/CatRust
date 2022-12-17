@@ -1,0 +1,12 @@
+use ipfs::{Ipfs, IpfsTypes};
+
+fn main() {
+    
+    let ipfs = Ipfs::new("/ip4/127.0.0.1/tcp/5001").unwrap();
+
+        let file_contents = b"Meow Meow World!";
+    let hash = ipfs.add(file_contents).unwrap();
+
+    let retrieved_file_contents = ipfs.cat(&hash).unwrap();
+    assert_eq!(file_contents, &retrieved_file_contents[..]);
+}
