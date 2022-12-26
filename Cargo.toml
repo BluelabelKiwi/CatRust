@@ -1,0 +1,2 @@
+[dependencies]
+ggez = "0.5"
