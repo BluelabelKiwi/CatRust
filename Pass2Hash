@@ -1,0 +1,40 @@
+extern crate ring;
+
+use ring::{digest, pbkdf2};
+use std::time::Instant;
+
+const CRYPTO_ITERATIONS: u32 = 100_000;
+
+fn main() {
+    println!("Welcome to the crypto game!");
+    println!("Enter a password to test the strength of your crypto:");
+
+    let password = read_password();
+    let start = Instant::now();
+    let hashed_password = hash_password(&password);
+    let elapsed = start.elapsed();
+
+    println!("Your hashed password is: {}", hashed_password);
+    println!("It took {:?} to hash your password.", elapsed);
+}
+
+fn read_password() -> Vec<u8> {
+    // Read password from user input yess
+    let mut password = String::new();
+    std::io::stdin().read_line(&mut password).unwrap();
+    password.trim().as_bytes().to_vec()
+}
+
+fn hash_password(password: &[u8]) -> String {
+    let salt = pbkdf2::Salt::new(pbkdf2::PBKDF2_HMAC_SHA256, &[0; 32]);
+    let mut hash = vec![0; digest::SHA256_OUTPUT_LEN];
+    pbkdf2::derive(
+        pbkdf2::PBKDF2_HMAC_SHA256,
+        CRYPTO_ITERATIONS,
+        &salt,
+        password,
+        &mut hash,
+    );
+    // HASH is HERE
+    hex::encode(hash)
+}
