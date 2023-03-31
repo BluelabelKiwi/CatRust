@@ -1,0 +1,33 @@
+package main
+
+	// Oduncu Yaparim
+  
+import (
+	"fmt"
+	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/bank"
+)
+
+func main() {
+	// Create a new codec
+	cdc := codec.New()
+
+	// Create a new account
+	addr := types.AccAddress([]byte("test_address"))
+	acc := auth.NewBaseAccountWithAddress(addr)
+
+	// Create a new bank keeper
+	bankKeeper := bank.NewBaseKeeper(cdc, nil, nil, nil)
+
+	// Set the balance of the account
+	err := bankKeeper.SetBalances(ctx, addr, []*types.Coin{{Denom: "token", Amount: types.NewInt(100)}})
+	if err != nil {
+		panic(err)
+	}
+
+	// Get the balance of the account
+	balance := bankKeeper.GetBalance(ctx, addr, "token")
+	fmt.Printf("Balance: %s", balance)
+}
