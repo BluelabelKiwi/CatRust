@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+# coding: utf-8
+# # WOW SERR
+
+def topla(*args):
+    toplam = 0
+    for i in args:
+        toplam = toplam + i
+    return toplam
